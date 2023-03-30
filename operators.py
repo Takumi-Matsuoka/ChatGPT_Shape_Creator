@@ -2,7 +2,6 @@ import bpy
 from .script_parser import parse_chatgpt_response
 from .chatgpt import generate_mesh_script
 
-
 class ChatGPT_OT_CreateMesh(bpy.types.Operator):
     bl_idname = "object.chatgpt_create_mesh"
     bl_label = "Create Mesh"
@@ -11,9 +10,18 @@ class ChatGPT_OT_CreateMesh(bpy.types.Operator):
     prompt: bpy.props.StringProperty(name="Prompt")
 
     def execute(self, context):
-        mesh_script = generate_mesh_script(self.prompt)
+        instructions = (f"You are an assistant made for the purposes of helping the user with Blender, the 3D software. "
+                        f"- Respond with your answers in markdown (```). "
+                        f"- Preferably import entire modules instead of bits. "
+                        f"- Do not perform destructive operations on the meshes. "
+                        f"- Do not use cap_ends. Do not do more than what is asked (setting up render settings, adding cameras, etc)"
+                        f"- Do not respond with anything that is not Python code."
+                        f"\n\nuser: {self.prompt}")
+
+        mesh_script = generate_mesh_script(instructions)
+        mesh_script = mesh_script.replace("```", "").strip()  # Remove markdown backquotes
         parse_chatgpt_response(mesh_script)
-        
+
         # Ensure a Text Editor is open
         for area in bpy.context.screen.areas:
             if area.type == 'TEXT_EDITOR':
@@ -37,7 +45,11 @@ class ChatGPT_OT_CreateMesh(bpy.types.Operator):
 
         # Run the script to create the mesh
         override = {'area': area, 'space_data': space}
-        bpy.ops.text.run_script(override)
+        try:
+            bpy.ops.text.run_script(override)
+        except Exception as e:
+            self.report({"ERROR"}, f"Script execution failed: {str(e)}")
+            return {"CANCELLED"}
 
         return {"FINISHED"}
 
