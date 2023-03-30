@@ -1,7 +1,7 @@
 bl_info = {
     "name": "ChatGPT Shape Creator",
     "author": "Takumi Matsuoka",
-    "version": (0, 1, 0),
+    "version": (0, 1, 1),
     "blender": (2, 80, 0),
     "location": "View3D > Tool Shelf > ChatGPT Shape Creator",
     "description": "Creates mesh shapes using ChatGPT",
