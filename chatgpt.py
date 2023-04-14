@@ -1,14 +1,12 @@
+import bpy
 import openai
-import os
-
-def read_api_key():
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    api_key_path = os.path.join(script_dir, "api_key.txt")
-    with open(api_key_path, "r") as f:
-        return f.read().strip()
 
 def generate_mesh_script(prompt):
-    openai.api_key = read_api_key()
+    # Get API key from addon preferences
+    addon_prefs = bpy.context.preferences.addons[__package__].preferences
+    api_key = addon_prefs.api_key
+
+    openai.api_key = api_key
 
     response = openai.Completion.create(
         engine="text-davinci-002",
