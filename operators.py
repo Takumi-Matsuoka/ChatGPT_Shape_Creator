@@ -10,6 +10,10 @@ class ChatGPT_OT_CreateMesh(bpy.types.Operator):
     prompt: bpy.props.StringProperty(name="Prompt")
 
     def execute(self, context):
+        preferences = context.preferences.addons[__package__].preferences
+        if not preferences.api_key:
+            self.report({"WARNING"}, "Please enter your API key in the addon preferences.")
+            return {"CANCELLED"}
         instructions = (f"You are an assistant made for the purposes of helping the user with Blender, the 3D software. "
                         f"- Respond with your answers in markdown (```). "
                         f"- Preferably import entire modules instead of bits. "
@@ -53,8 +57,24 @@ class ChatGPT_OT_CreateMesh(bpy.types.Operator):
 
         return {"FINISHED"}
 
+class ChatGPTAddonPreferences(bpy.types.AddonPreferences):
+    bl_idname = __package__
+
+    api_key: bpy.props.StringProperty(
+        name="API Key",
+        description="Enter your OpenAI API key",
+        default="",
+        subtype="PASSWORD",
+    )
+
+    def draw(self, context):
+        layout = self.layout
+        layout.prop(self, "api_key")
+
 def register():
+    bpy.utils.register_class(ChatGPTAddonPreferences)
     bpy.utils.register_class(ChatGPT_OT_CreateMesh)
 
 def unregister():
+    bpy.utils.unregister_class(ChatGPTAddonPreferences)
     bpy.utils.unregister_class(ChatGPT_OT_CreateMesh)
